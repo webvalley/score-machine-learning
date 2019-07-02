@@ -16,7 +16,7 @@ from sklearn.metrics import matthews_corrcoef as mcc
 from sklearn.metrics import accuracy_score as acc
 from scipy.sparse import csr_matrix 
 import matplotlib.pyplot as plt
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 
 # In[68]:
