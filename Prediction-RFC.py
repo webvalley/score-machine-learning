@@ -146,18 +146,11 @@ def report_everything(csvFile, headers, x_ind, y_ind, filename):
 # In[69]:
 
 
-#X_1, y_1 = get_data_for_trial(df, ["lab:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3])
-#X_2, y_2 = get_data_for_trial(df, ["lab:"], [0, 1, 2, 3], [0, 1, 2, 3])
-#X_3, y_3 = get_data_for_trial(df, ["ana_pat:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3])
-#X_4, y_4 = get_data_for_trial(df, ["ana_pat:"], [0, 1, 2, 3], [0, 1, 2, 3])
-#X_5, y_5 = get_data_for_trial(df, ["lab:", "ult_tsa:", "ana_pat"], [0, 1, 2, 3], [0, 1, 2, 3])
-#random_forest_training(X_1, y_1, S, "total_lab-ult_tsa")
-#random_forest_training(X_2, y_2, "total_lab")
-#random_forest_training(X_3, y_3, "total_ana_pat-ult_tsa")
-#random_forest_training(X_4, y_4, "total_ana_pat")
-#random_forest_training(X_5, y_5, "total_lab-ult_tsa-ana_pat")
 report_everything("Data/new_wScore.csv", ["lab:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab-ult_tsa")
-
+#report_everything("Data/new_wScore.csv", ["lab:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab")
+#report_everything("Data/new_wScore.csv", ["ana_pat:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_ana_pat-ult_tsa")
+#report_everything("Data/new_wScore.csv", ["ana_pat:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_ana_pat")
+#report_everything("Data/new_wScore.csv", ["lab:", "ult_tsa:", "ana_pat:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab-ult_tsa-ana_pat")
 
 # In[ ]:
 
