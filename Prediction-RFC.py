@@ -92,7 +92,7 @@ def get_data_for_trial(df, headers, x_ind, y_ind):
     return X_csr, y_new_np
 
 def random_forest_training(X, y, S, filename):
-    os.system(filename)
+    os.mkdir(filename)
     for i in range(5):
         logFile = open(filename + "/" + str(i) + ".txt", "w")
         X_tr, X_ts, y_tr, y_ts, S_tr, S_ts = splt(X, y, S, test_size=0.2, random_state=i, stratify = S)
@@ -111,7 +111,7 @@ def random_forest_training(X, y, S, filename):
             logFile.write('{} Split {} Iteration: MCC: {}, ACC: {}'.format(i, counter, mc, ac))
             pickle.dump(forest, open(filename + "/" + str(i) + "-" + str(counter) + "forest.pkl", "wb"))
             counter = counter + 1
-        forest = rfc(n_estimators = 1000, max_depth = 100)
+        forest = rfc(n_estimators = 1000, max_depth = 100, -1)
         forest.fit(X_tr, y_tr)
         y_ts_our = forest.predict(X_ts)
         mc = mcc(y_val, y_val_our)
