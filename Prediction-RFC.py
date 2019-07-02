@@ -111,7 +111,7 @@ def random_forest_training(X, y, S, filename):
             logFile.write('{} Split {} Iteration: MCC: {}, ACC: {}'.format(i, counter, mc, ac))
             pickle.dump(forest, open(filename + "/" + str(i) + "-" + str(counter) + "forest.pkl", "wb"))
             counter = counter + 1
-        forest = rfc(n_estimators = 1000, max_depth = 100, -1)
+        forest = rfc(n_estimators = 1000, max_depth = 100, n_jobs = -1)
         forest.fit(X_tr, y_tr)
         y_ts_our = forest.predict(X_ts)
         mc = mcc(y_val, y_val_our)
