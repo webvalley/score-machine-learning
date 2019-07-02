@@ -94,6 +94,8 @@ def get_data_for_trial(df, headers, x_ind, y_ind):
 def random_forest_training(X, y, S, filename):
     os.mkdir(filename)
     for i in range(5):
+        dataMCC = []
+        dataACC = []
         logFile = open(filename + "/" + str(i) + ".txt", "w")
         X_tr, X_ts, y_tr, y_ts, S_tr, S_ts = splt(X, y, S, test_size=0.2, random_state=i, stratify = S)
         rskf_ = rskf(n_splits=5, n_repeats=10, random_state=42)
@@ -108,7 +110,9 @@ def random_forest_training(X, y, S, filename):
             y_val_our = forest.predict(X_val)
             mc = mcc(y_val, y_val_our)
             ac = acc(y_val, y_val_our)
-            logFile.write('{} Split {} Iteration: MCC: {}, ACC: {}'.format(i, counter, mc, ac))
+            dataMCC.append(mc)
+            dataACC.append(ac)
+            logFile.write('{} Split {} Iteration: MCC: {}, ACC: {}\n'.format(i, counter, mc, ac))
             pickle.dump(forest, open(filename + "/" + str(i) + "-" + str(counter) + "forest.pkl", "wb"))
             counter = counter + 1
         forest = rfc(n_estimators = 1000, max_depth = 100, n_jobs = -1)
@@ -116,12 +120,12 @@ def random_forest_training(X, y, S, filename):
         y_ts_our = forest.predict(X_ts)
         mc = mcc(y_val, y_val_our)
         ac = acc(y_val, y_val_our) 
-        logFile.write('Final Iteration: MCC: {}, ACC: {}'.format(mc, ac))
+        logFile.write('Final Iteration: MCC: {}, ACC: {}\n'.format(mc, ac))
         pickle.dump(forest, open(filename + "/final-forest.pkl", "wb"))
-        mccCI = bootstrap_ci(np.array(dataMCC[i]))
-        accCI = bootstrap_ci(np.array(dataACC[i]))
-        logFile.write('MCC Interval: {} - {}'.format(mccCI[0], mccCI[1]))
-        logFile.write('ACC Interval: {} - {}'.format(accCI[0], accCI[1]))
+        mccCI = bootstrap_ci(np.array(dataMCC))
+        accCI = bootstrap_ci(np.array(dataACC))
+        logFile.write('MCC Interval: {} - {}\n'.format(mccCI[0], mccCI[1]))
+        logFile.write('ACC Interval: {} - {}\n'.format(accCI[0], accCI[1]))
         logFile.close()
 
 def report_everything(csvFile, headers, x_ind, y_ind, filename):
