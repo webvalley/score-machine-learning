@@ -183,6 +183,7 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
                                'MCC_CI_MIN': mcc_ci_min, 'MCC_CI_MAX': mcc_ci_max,
                                'ACC_TEST': ac, 'MCC_TEST': mcc})
         scores.to_csv(log_file_path, sep=',')
+        print('Experiment {} out of {} Completed.'.format(train_test_split_run+1, train_test_splits))
 
 
 def run_experiment(csv_data_file: str, features_set: Tuple,
@@ -203,6 +204,7 @@ def run_experiment(csv_data_file: str, features_set: Tuple,
 if __name__ == '__main__':
 
     import json
+    from datetime import datetime
 
     parser = ArgumentParser("Random Forest Training with CV (DAP) using selected Clinical Features")
 
@@ -221,5 +223,15 @@ if __name__ == '__main__':
     else:
         args.visits_map = json.loads(args.visits_map)
 
+    print('=='*40)
+    start_dt = datetime.now()
+    print('Experiment [{}, {}]: '.format(args.features_set, args.visits_map))
+    print('Start: {}'.format(start_dt.strftime('%d-%m-%Y %H:%M:%S')))
+
     run_experiment(csv_data_file=args.datafile, features_set=args.features_set,
                    visit_map=args.visits_map, exp_log_folder_path=args.output_folder)
+
+    end_dt = datetime.now()
+    print('End: {}'.format(end_dt).strftime('%d-%m-%Y %H:%M:%S'))
+    print('Exec Time: {}'.format(end_dt-start_dt))
+    print('==' * 40)
