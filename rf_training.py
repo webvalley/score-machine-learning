@@ -17,6 +17,7 @@ from typing import Tuple, Dict
 # =========
 # CONSTANTS
 # =========
+DEFAULT_FEATURES_SET = ['lab:', 'ana_pat:', 'esa_obi:']
 CV_REPEATS = 10
 CV_NSPLITS = 5
 COLUMNS_BLACK_LIST = ['SCORE', 'esa_obi:sbp', 'esa_obi:dbp',
@@ -140,6 +141,8 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
         X_tr, X_ts, y_tr, y_ts, S_tr, S_ts = splt(X, y, stratify_array, test_size=0.2,
                                                   random_state=train_test_split_run, stratify=stratify_array)
 
+        print('Experiment {} out of {} ...'.format(train_test_split_run + 1, train_test_splits), end=' ')
+
         rskf_ = rskf(n_splits=cv_nsplits, n_repeats=cv_repeats, random_state=42)
         cv_exp_number = 1
         for train_index, val_index in rskf_.split(X_tr, S_tr):
@@ -180,9 +183,9 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
                                'ACC_CI_MIN': acc_ci_min, 'ACC_CI_MAX': acc_ci_max,
                                'MCC': np.mean(mcc_scores),
                                'MCC_CI_MIN': mcc_ci_min, 'MCC_CI_MAX': mcc_ci_max,
-                               'ACC_TEST': ac, 'MCC_TEST': mc})
+                               'ACC_TEST': ac, 'MCC_TEST': mc}, index=[0])
         scores.to_csv(log_file_path, sep=',')
-        print('Experiment {} out of {} Completed.'.format(train_test_split_run + 1, train_test_splits))
+        print('Done')
 
 
 def run_experiment(csv_data_file: str, features_set: Tuple,
@@ -209,25 +212,45 @@ if __name__ == '__main__':
 
     parser.add_argument('--data', '-d', dest='datafile', default='Data/new_wScore.csv',
                         help='Path to the Dataset in CSV format')
+
     parser.add_argument('--features', '-f', nargs='+', required=True, dest='features_set',
+                        default=DEFAULT_FEATURES_SET,
                         help='List of features sets to include in the analysis')
+
+    parser.add_argument('--with-ultrasound', action='store_true', dest='with_us',
+                        help="Include or Not UltraSound Features")
+
     parser.add_argument('--visits-map', '-v', default='all', dest='visits_map', help='Map of the Visit data')
-    parser.add_argument('--output', '-o', dest='output_folder', required=True,
+
+    parser.add_argument('--output', '-o', dest='output_folder', default='',
                         help="Path to the destination folder where logs of experiments will be saved.")
 
     args = parser.parse_args()
 
+    if any(f not in DEFAULT_FEATURES_SET for f in args.features_set):
+        raise ValueError('Invalid Feature set provided')
+
     if args.visits_map == 'all':
+        visits_map_mnemonic = 'all'  # used for output folder name, if None is specified
         args.visits_map = {0: 0, 1: 1, 2: 2, 3: 3}
     else:
         args.visits_map = json.loads(args.visits_map, object_hook=lambda d: {int(k): int(v) for k, v in d.items()})
+        visits_labels = {0: 'first', 1: 'second', 2:'third', 3: 'fourth'}
+        visits_map_mnemonic = '_'.join('{}{}'.format(k, v) for k, v in args.visits_map.items())
+
+    if args.with_us:
+        args.features_set += ['ult_tsa:']
+
+    if not args.output:
+        args.output = '{}_{}'.format(visits_map_mnemonic,
+                                     '_'.join(f.replace(':','').replace('_','') for f in args.features_set))
 
     print('==' * 40)
     start_dt = datetime.now()
     print('Experiment [{}, {}]: '.format(args.features_set, args.visits_map))
     print('Start: {}'.format(start_dt.strftime('%d-%m-%Y %H:%M:%S')))
 
-    run_experiment(csv_data_file=args.datafile, features_set=args.features_set,
+    run_experiment(csv_data_file=args.datafile, features_set=tuple(args.features_set),
                    visit_map=args.visits_map, exp_log_folder_path=args.output_folder)
 
     end_dt = datetime.now()
