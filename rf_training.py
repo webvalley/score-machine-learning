@@ -232,6 +232,6 @@ if __name__ == '__main__':
                    visit_map=args.visits_map, exp_log_folder_path=args.output_folder)
 
     end_dt = datetime.now()
-    print('End: {}'.format(end_dt).strftime('%d-%m-%Y %H:%M:%S'))
+    print('End: {}'.format(end_dt.strftime('%d-%m-%Y %H:%M:%S')))
     print('Exec Time: {}'.format(end_dt-start_dt))
     print('==' * 40)
