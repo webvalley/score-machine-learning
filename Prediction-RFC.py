@@ -6,6 +6,7 @@
 
 import pickle
 import os
+import argparse
 import pandas as pd
 import numpy as np
 np.random.seed(42)
@@ -121,7 +122,7 @@ def random_forest_training(X, y, S, filename):
         mc = mcc(y_val, y_val_our)
         ac = acc(y_val, y_val_our) 
         logFile.write('Final Iteration: MCC: {}, ACC: {}\n'.format(mc, ac))
-        pickle.dump(forest, open(filename + "/" + str(i) + "final-forest.pkl", "wb"))
+        pickle.dump(forest, open(filename + "/" + str(i) + "-final-forest.pkl", "wb"))
         mccCI = bootstrap_ci(np.array(dataMCC))
         accCI = bootstrap_ci(np.array(dataACC))
         logFile.write('MCC Interval: {} - {}\n'.format(mccCI[0], mccCI[1]))
@@ -142,17 +143,20 @@ def report_everything(csvFile, headers, x_ind, y_ind, filename):
     for i, (_, dfGroup) in enumerate(groups):
         indicies = dfGroup.index.values
         S[indicies] = i
-    
+    valInd = {}
+    for i, (typ, dfGroup) in enumerate(df.groupby(["visit"])):
+        valInd[typ] = dfGroup.index.values
+    Stemp = np.concatenate([S[valInd[ind]] for ind in x_ind])
     X_, y_ = get_data_for_trial(df, headers, x_ind, y_ind)
-    random_forest_training(X_, y_, S, filename)
+    random_forest_training(X_, y_, Stemp, filename)
 
 
 # In[69]:
 
 
-report_everything("Data/new_wScore.csv", ["lab:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab-ult_tsa")
+#report_everything("Data/new_wScore.csv", ["lab:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab-ult_tsa")
 #report_everything("Data/new_wScore.csv", ["lab:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab")
-#report_everything("Data/new_wScore.csv", ["ana_pat:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_ana_pat-ult_tsa")
+report_everything("Data/new_wScore.csv", ["ana_pat:", "ult_tsa:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_ana_pat-ult_tsa")
 #report_everything("Data/new_wScore.csv", ["ana_pat:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_ana_pat")
 #report_everything("Data/new_wScore.csv", ["lab:", "ult_tsa:", "ana_pat:"], [0, 1, 2, 3], [0, 1, 2, 3], "total_lab-ult_tsa-ana_pat")
 #report_everything("Data/new_wScore.csv", ["lab:", "ult_tsa:"], [0], [3], "total_lab-ult_tsa_1_4")
