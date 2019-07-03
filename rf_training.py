@@ -70,11 +70,8 @@ def read_data(csv_data_file):
 
 
 def select_features_set(df, features_set):
-    features_set_prefixes = []
-    features_set = features_set + ["subject_id", "ScoreClass", "visit"]
-    for header in features_set:
-        features_set_prefixes.append(df.columns.str.startswith(header))
-    return df[df.columns[np.any(features_set_prefixes, axis=0)]]
+    features_set += ['subject_id', 'ScoreClass', 'visit']
+    return df[df.columns[df.columns.str.startswith(tuple(features_set))]]
 
 
 def get_data_for_visits(df, features_set, visits_map):
@@ -85,8 +82,9 @@ def get_data_for_visits(df, features_set, visits_map):
 
     X, y = None, None
     for X_feat_visit, y_lab_visit in visits_map.items():
-        X_v = target_features[target_features['visit'] == X_feat_visit].drop(('subject_id',
-                                                                              'ScoreClass', 'visit'), axis=1).values
+        X_v = target_features[target_features['visit'] == X_feat_visit].drop(['subject_id',
+                                                                              'ScoreClass', 'visit'], axis=1).values
+
         y_v = target_features[target_features['visit'] == y_lab_visit]['ScoreClass'].values
 
         if X is None:
@@ -104,6 +102,7 @@ def get_data_for_visits(df, features_set, visits_map):
 
     # CROSSCHECK
     # ----------
+    print('Dataset Shapes CrossCheck: ')
     print('X shape: ', X_csr.shape)
     print('y shape: ', y.shape)
 
@@ -181,9 +180,9 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
                                'ACC_CI_MIN': acc_ci_min, 'ACC_CI_MAX': acc_ci_max,
                                'MCC': np.mean(mcc_scores),
                                'MCC_CI_MIN': mcc_ci_min, 'MCC_CI_MAX': mcc_ci_max,
-                               'ACC_TEST': ac, 'MCC_TEST': mcc})
+                               'ACC_TEST': ac, 'MCC_TEST': mc})
         scores.to_csv(log_file_path, sep=',')
-        print('Experiment {} out of {} Completed.'.format(train_test_split_run+1, train_test_splits))
+        print('Experiment {} out of {} Completed.'.format(train_test_split_run + 1, train_test_splits))
 
 
 def run_experiment(csv_data_file: str, features_set: Tuple,
@@ -191,7 +190,7 @@ def run_experiment(csv_data_file: str, features_set: Tuple,
     # visit_map: {0: 0, 1:1...} OR {0: 3}...
 
     # Create the folder in which logs will be saved
-    os.makedirs(exp_log_folder_path)
+    os.makedirs(exp_log_folder_path, exist_ok=True)
 
     df = read_data(csv_data_file)
     X, y = get_data_for_visits(df, features_set, visit_map)
@@ -221,9 +220,9 @@ if __name__ == '__main__':
     if args.visits_map == 'all':
         args.visits_map = {0: 0, 1: 1, 2: 2, 3: 3}
     else:
-        args.visits_map = json.loads(args.visits_map)
+        args.visits_map = json.loads(args.visits_map, object_hook=lambda d: {int(k): int(v) for k, v in d.items()})
 
-    print('=='*40)
+    print('==' * 40)
     start_dt = datetime.now()
     print('Experiment [{}, {}]: '.format(args.features_set, args.visits_map))
     print('Start: {}'.format(start_dt.strftime('%d-%m-%Y %H:%M:%S')))
@@ -233,5 +232,5 @@ if __name__ == '__main__':
 
     end_dt = datetime.now()
     print('End: {}'.format(end_dt.strftime('%d-%m-%Y %H:%M:%S')))
-    print('Exec Time: {}'.format(end_dt-start_dt))
+    print('Exec Time: {}'.format(end_dt - start_dt))
     print('==' * 40)
