@@ -213,7 +213,7 @@ if __name__ == '__main__':
     parser.add_argument('--data', '-d', dest='datafile', default='Data/new_wScore.csv',
                         help='Path to the Dataset in CSV format')
 
-    parser.add_argument('--features', '-f', nargs='+', required=True, dest='features_set',
+    parser.add_argument('--features', '-f', nargs='+', dest='features_set',
                         default=DEFAULT_FEATURES_SET,
                         help='List of features sets to include in the analysis')
 
