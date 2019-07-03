@@ -236,7 +236,8 @@ if __name__ == '__main__':
     else:
         args.visits_map = json.loads(args.visits_map, object_hook=lambda d: {int(k): int(v) for k, v in d.items()})
         visits_labels = {0: 'first', 1: 'second', 2: 'third', 3: 'fourth'}
-        visits_map_mnemonic = '_'.join('{}{}'.format(k, v) for k, v in args.visits_map.items())
+        visits_map_mnemonic = '_'.join('{}{}'.format(visits_labels[k], visits_labels[v])
+                                       for k, v in args.visits_map.items())
 
     if args.with_us:
         args.features_set += ['ult_tsa:']
