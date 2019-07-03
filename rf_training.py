@@ -235,19 +235,19 @@ if __name__ == '__main__':
         args.visits_map = {0: 0, 1: 1, 2: 2, 3: 3}
     else:
         args.visits_map = json.loads(args.visits_map, object_hook=lambda d: {int(k): int(v) for k, v in d.items()})
-        visits_labels = {0: 'first', 1: 'second', 2:'third', 3: 'fourth'}
+        visits_labels = {0: 'first', 1: 'second', 2: 'third', 3: 'fourth'}
         visits_map_mnemonic = '_'.join('{}{}'.format(k, v) for k, v in args.visits_map.items())
 
     if args.with_us:
         args.features_set += ['ult_tsa:']
 
-    if not args.output:
-        args.output = '{}_{}'.format(visits_map_mnemonic,
-                                     '_'.join(f.replace(':','').replace('_','') for f in args.features_set))
+    if not args.output_folder:
+        args.output_folder = '{}_{}'.format(visits_map_mnemonic,
+                                            '_'.join(f.replace(':', '').replace('_', '') for f in args.features_set))
 
     print('==' * 40)
     start_dt = datetime.now()
-    print('Experiment [{}, {}]: '.format(args.features_set, args.visits_map))
+    print('Experiment [{}, {}] - OUTPUT: {}'.format(args.features_set, args.visits_map, args.output_folder))
     print('Start: {}'.format(start_dt.strftime('%d-%m-%Y %H:%M:%S')))
 
     run_experiment(csv_data_file=args.datafile, features_set=tuple(args.features_set),
