@@ -71,8 +71,8 @@ def read_data(csv_data_file):
 
 
 def select_features_set(df, features_set):
-    features_set += ['subject_id', 'ScoreClass', 'visit']
-    return df[df.columns[df.columns.str.startswith(tuple(features_set))]]
+    features = list(features_set) + ['subject_id', 'ScoreClass', 'visit']
+    return df[df.columns[df.columns.str.startswith(tuple(features))]]
 
 
 def get_data_for_visits(df, features_set, visits_map):
