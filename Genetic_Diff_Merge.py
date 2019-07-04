@@ -24,7 +24,7 @@ from typing import Tuple, Dict
 # =========
 # CONSTANTS
 # =========
-gen_path = "/home/webvalley/score-machine-learning/DBPLIC1_wScoreCLass.xlsx"
+gen_path = "/home/webvalley/score-machine-learning/Data/DBPLIC1_wScoreCLass.xlsx"
 csv_path = "/home/webvalley/score-machine-learning/Data/Milano_with_score.csv"
 DEFAULT_FEATURES_SET = ['lab:', 'ana_pat:', 'esa_obi:']
 COMPLETE_FEATURES_SET = ['ana_fis:', 'ana_pat:', 'ana_far:', 'esa_obi:',
@@ -303,4 +303,4 @@ def fuse_genetic(df_reg, df_gen):
                 newDf = newDf.append(tempSeries, ignore_index=True)
             newDfDf = newDfDf.append(newDf, ignore_index=True)
     return newDfDf
-
+run_experiment(csv_path, (), {}, "folder_name")
