@@ -22,7 +22,7 @@ COMPLETE_FEATURES_SET = ['ana_fis:', 'ana_pat:', 'ana_far:', 'esa_obi:',
                          'lab:', 'end:', 'lun_bod_sca:', 'eco_art:']
 CV_REPEATS = 10
 CV_NSPLITS = 5
-COLUMNS_BLACK_LIST = ['SCORE', 'esa_obi:sbp', 'esa_obi:dbp',
+SCORE_COLS_BLACKLIST = ['esa_obi:sbp', 'esa_obi:dbp',
                       'ana_fis:smoking_recod', 'lab:glucose',
                       'lab:calculated_ldl',
                       'lab:total_cholesterol',
@@ -64,13 +64,21 @@ def bootstrap_ci(x, B=1000, alpha=0.05, seed=42):
 
 def read_data(csv_data_file):
     df = pd.read_csv(csv_data_file)
+    df.set_index('subject_id', inplace=True)
     df.sort_values("visit")
-    df = df.select_dtypes(exclude=['object', 'datetime64'])
-    df = df.drop(labels=COLUMNS_BLACK_LIST, axis=1)
-    # Get rid of all columns with all -1 (NaN) and/or Zeros
-    df = df[df.columns[df.max() > 0]]
     return df
 
+
+def filter_data(df, ):
+    """
+    """
+    df = df.select_dtypes(exclude=['object', 'datetime64'])
+    df = df.drop(labels=SCORE_COLS_BLACKLIST, axis=1)
+    # Get rid of all columns with all -1 (NaN) and/or Zeros
+    df = df[df.columns[df.max() > 0]]
+    df = df[df.columns[df.var() > 0.1]]
+    df = df[df.columns[df.median() != -1]]
+    return df
 
 def select_features_set(df, features_set):
     features = list(features_set) + ['subject_id', 'ScoreClass', 'visit']
@@ -163,7 +171,7 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
 
             # Save Feature ranking
             np.savez(os.path.join(feat_rankings_folder, 'feat_ranking_{:02d}.npz'.format(cv_exp_number)),
-                     forest.feature_importances_)
+                     ranking=forest.feature_importances_)
 
 
             rf_pickle_filepath = os.path.join(train_test_run_folder_path, 'forest_{:02d}.pkl'.format(cv_exp_number))
