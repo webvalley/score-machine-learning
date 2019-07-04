@@ -18,6 +18,8 @@ from typing import Tuple, Dict
 # CONSTANTS
 # =========
 DEFAULT_FEATURES_SET = ['lab:', 'ana_pat:', 'esa_obi:']
+COMPLETE_FEATURES_SET = ['ana_fis:', 'ana_pat:', 'ana_far:', 'esa_obi:',
+                         'lab:', 'end:', 'lun_bod_sca:', 'eco_art:']
 CV_REPEATS = 10
 CV_NSPLITS = 5
 COLUMNS_BLACK_LIST = ['SCORE', 'esa_obi:sbp', 'esa_obi:dbp',
@@ -138,6 +140,9 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
         train_test_run_folder_path = os.path.join(experiment_folder_path, '{}'.format(train_test_split_run))
         os.makedirs(train_test_run_folder_path, exist_ok=True)
 
+        feat_rankings_folder = os.path.join(train_test_run_folder_path, 'features_importance')
+        os.makedirs(feat_rankings_folder, exist_ok=True)
+
         X_tr, X_ts, y_tr, y_ts, S_tr, S_ts = splt(X, y, stratify_array, test_size=0.2,
                                                   random_state=train_test_split_run, stratify=stratify_array)
 
@@ -155,6 +160,11 @@ def random_forest_training(X, y, stratify_array, experiment_folder_path,
             ac = acc(y_val, y_pred_val)
             mcc_scores.append(mc)
             acc_scores.append(ac)
+
+            # Save Feature ranking
+            np.savez(os.path.join(feat_rankings_folder, 'feat_ranking_{:02d}.npz'.format(cv_exp_number)),
+                     forest.feature_importances_)
+
 
             rf_pickle_filepath = os.path.join(train_test_run_folder_path, 'forest_{:02d}.pkl'.format(cv_exp_number))
             with open(rf_pickle_filepath, 'wb') as pickle_file:
@@ -213,9 +223,14 @@ if __name__ == '__main__':
     parser.add_argument('--data', '-d', dest='datafile', default='Data/new_wScore.csv',
                         help='Path to the Dataset in CSV format')
 
-    parser.add_argument('--features', '-f', nargs='+', dest='features_set',
-                        default=DEFAULT_FEATURES_SET,
+    parser.add_argument('--features', '-f', nargs='+', dest='features_set', default=None,
                         help='List of features sets to include in the analysis')
+
+    parser.add_argument('--all-features', action='store_true', dest='all_features',
+                        help='Include all features (but ultrasound) in the feature set')
+
+    parser.add_argument('--with-genetics', action='store_true', dest='with_genetics',
+                        help='Include Genetics Features (NOT IMPLEMENTED YET)')
 
     parser.add_argument('--with-ultrasound', action='store_true', dest='with_us',
                         help="Include or Not UltraSound Features")
@@ -227,8 +242,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if any(f not in DEFAULT_FEATURES_SET for f in args.features_set):
+    if args.features_set and any(f not in DEFAULT_FEATURES_SET for f in args.features_set):
         raise ValueError('Invalid Feature set provided')
+
+    if args.with_genetics:
+        raise NotImplementedError('Inclusion of Genetics Features not yet available')
 
     if args.visits_map == 'all':
         visits_map_mnemonic = 'all'  # used for output folder name, if None is specified
@@ -236,8 +254,14 @@ if __name__ == '__main__':
     else:
         args.visits_map = json.loads(args.visits_map, object_hook=lambda d: {int(k): int(v) for k, v in d.items()})
         visits_labels = {0: 'first', 1: 'second', 2: 'third', 3: 'fourth'}
-        visits_map_mnemonic = '_'.join('{}{}'.format(visits_labels[k], visits_labels[v])
+        visits_map_mnemonic = '_'.join('{}_{}'.format(visits_labels[k], visits_labels[v])
                                        for k, v in args.visits_map.items())
+
+    if not args.features_set:
+        if args.all_features:
+            args.features_set = COMPLETE_FEATURES_SET
+        else:
+            args.features_set = DEFAULT_FEATURES_SET
 
     if args.with_us:
         args.features_set += ['ult_tsa:']
